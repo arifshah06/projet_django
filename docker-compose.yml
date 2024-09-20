@@ -1,32 +1,43 @@
 services:
   db:
     image: postgres:13
+    container_name: db
     environment:
-      POSTGRES_DB: mydb
-      POSTGRES_USER: ubuntu
-      POSTGRES_PASSWORD: ubuntu
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      PGPORT: ${DATABASE_PORT}
+      
     ports:
-      - "5434:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
   web:
     build:
       context: ./django-site/projet_django  # Context path
       dockerfile: public/Dockerfile           # Path to Dockerfile within the context
+    container_name: django
+    command: sh -c "python manage.py makemigrations &&
+                    python manage.py migrate &&
+                    gunicorn microservice_sample_app.wsgi:application --bind 
+                    0.0.0.0:${APP_PORT}" 
     volumes:
       - .:/app
     ports:
       - 8001:8000
     env_file:
-      - /home/ubuntu/projet_django/.env.dev
+      - /home/ubuntu/projet_django/.env
     depends_on:
       - db
     environment:
-      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1
-      - POSTGRES_DB=mydb
-      - POSTGRES_USER=ubuntu
-      - POSTGRES_PASSWORD=ubuntu
-      - POSTGRES_HOST=db
+      - DJANGO_ENV=${DJANGO_ENV}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_PORT=${DATABASE_PORT}
+    restart: "on-failure" 
+
 
 volumes:
   postgres_data:
