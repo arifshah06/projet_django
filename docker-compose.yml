@@ -1,1 +1,36 @@
-# Créez ici votre docker compose
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: ubuntu
+      POSTGRES_PASSWORD: ubuntu
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  web:
+    build:
+      context: ./django-site/projet_django  # Context path
+      dockerfile: public/Dockerfile           # Path to Dockerfile within the context
+    volumes:
+      - .:/app
+    ports:
+      - 8001:8000
+    env_file:
+      - /home/ubuntu/projet_django/.env.dev
+    depends_on:
+      - db
+    environment:
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1
+      - POSTGRES_DB=mydb
+      - POSTGRES_USER=ubuntu
+      - POSTGRES_PASSWORD=ubuntu
+      - POSTGRES_HOST=db
+
+volumes:
+  postgres_data:
+
+networks:
+  mynetwork:
+    driver: bridge

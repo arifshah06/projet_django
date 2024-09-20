@@ -1,0 +1,17 @@
+idee Django
+
+Base de donnees des comptes perso
+
+Comptes
+nom
+mot de passe
+question securite
+
+Transaction
+deja paye
+montant
+date de paimenet
+
+Abonnements
+Netflix
+Google etc
